@@ -1,0 +1,64 @@
+#include <Servo.h>
+#include <PID_v1.h>
+
+#include <LiquidCrystal.h>   
+
+#define ServoPin 3
+
+float Kp = 9;
+float Ki = 0;
+float Kd = 1.5;
+double Setpoint, Input, Output, ServoOutput,error;
+
+LiquidCrystal lcd(7, 8, 9, 10, 11 , 12);
+
+
+PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+
+Servo myServo;
+
+
+ void setup() {
+
+lcd.begin(16,2);         
+
+
+ Serial.begin(9600);
+ myServo.attach(ServoPin);
+ Input = map(analogRead(A0),0,1023,0,20.0);
+
+ myPID.SetMode(AUTOMATIC);
+ myPID.SetOutputLimits(-24,24);
+}
+
+ void loop()
+{
+
+ Setpoint = map(analogRead(A1),0,1023,0,20.0);
+
+ Input = map(analogRead(A0),0,1023,0,20.0);
+
+myPID.Compute();
+
+ServoOutput=60+Output;
+error=Setpoint-Input;
+myServo.write(ServoOutput);
+ //Serial.print("Setpoint position: ");
+ Serial.println(Setpoint);
+ //Serial.print("     Ball_Position:");
+ Serial.println(Input);
+ //Serial.print("error: ");
+ //Serial.println(error);
+ delay(100);
+
+
+
+ lcd.clear();                                          //LCD'deki eski yazılar temizlenir.
+ lcd.setCursor(0,0);                                  //LCD'nin 1. satır 1. sütunundan yazmaya başlıyoruz.      
+ lcd.print("Referans:");   
+ lcd.print(Setpoint);                                
+ lcd.setCursor(0,1);                                  //LCD'nin 2. satır 1. sütunundan yazmaya başlıyoruz.
+ lcd.print("Konum:");                                   
+ lcd.print(Input);
+
+}
